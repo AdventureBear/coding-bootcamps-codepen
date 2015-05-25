@@ -56,3 +56,8 @@ ul li span {
   display: block;
   clear: right;
 }
+
+#four p{
+  font-size: .6em;
+  color: black;
+}

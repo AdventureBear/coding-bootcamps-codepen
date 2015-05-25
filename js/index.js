@@ -4,9 +4,22 @@ $(document).ready(function() {
 
   var city = "test";
   var lastYearincome = 52000;
-  //var workingCosts = [];
-  //var workingCostOpportunity = [];
 
+  //this is used before graphing to collect data for d3/chartist
+  var bootcampData = [
+    { names: [] },
+    { costs: [] },
+    { weeks: [] },
+    { finance: [] },
+    { housing: [] },
+    { workingCost: [] }
+
+  ];
+
+  //major cities array to check against users location for housing costs
+  var cityArray = ["San Fransisco","Los Angeles", "Chicago", "Austin", "New York City"];
+
+  //this is the raw bootcamps file allowing easy addition of new code camps
   var bootcamps = [{
     "name": "App Academy",
     "cost": "18000",
@@ -235,9 +248,6 @@ $(document).ready(function() {
     ]
   }];
 
-  //var campNameLabels = getBootcamps(bootcamps);
-  //var campCostsArray = getBootcampsCosts(bootcamps);
-
   //reduce opacity for steps 2 through 4
   //the actual elements start out hidden via CSS
   $('#two').css({opacity:'0.25'});
@@ -254,37 +264,16 @@ $(document).ready(function() {
     $('#two').css({opacity:'1'});
     $('#income').css({visibility:'visible'});
 
-
-
-    console.log(city);
-    //console.log(campNameLabels);
+    //console.log(city);
 
   });
 
-  /*
-  var housingArray = bootCampLocation(city, bootcamps);
-  function bootCampLocation(city, bootCampObject){
-    var housingCosts=[];
-    if (city!=='sf'){
-      for (var i = 0; i < bootCampObject.length; i++)
-      {
-        housingCosts.push(2000);
-      }
-    }
-    return housingCosts;
-  }
-*/
+
   //step two event listener
 
   $('#income').on("change", function() {
     console.log("Income Updated");
     lastYearincome = parseInt($('#lastYearIncome').val());
-
-    //console.log(lastYearincome);
-
-    //workingCostOpportunity = getWorkingCosts(bootcamps, lastYearincome);
-
-    //console.log("Income Array", workingCostOpportunity);
 
     //make next step visible
     $('#three').css({opacity:'1'});
@@ -292,60 +281,19 @@ $(document).ready(function() {
 
   });
 
-  /*
-  function getWorkingCosts(bootCampObject, annualIncome) {
-    //console.log("BootCamp Object", bootcamps)
-    console.log("last years income", annualIncome);
-    var income = ($('#lastYearIncome').val())/50;
-    for (var camp in bootCampObject) {
-      workingCosts.push(Math.floor(bootCampObject[camp].weeks*income));
-    }
-
-    console.log("Working Costs Array:", workingCosts);
-    return workingCosts;
-  }
-
-  function getBootcamps(bootCampObject) {
-    var bootcampNames = [];
-    for (var camp in bootCampObject) {
-      bootcampNames.push(bootCampObject[camp].name);
-      // bootcampCosts.push(bootCampObject[camp].cost);
-    }
-    return bootcampNames;
-  }
-
-  function getBootcampsCosts(bootCampObject) {
-    var bootcampCosts = [];
-    for (var camp in bootCampObject) {
-      bootcampCosts.push(bootCampObject[camp].cost);
-      // bootcampCosts.push(bootCampObject[camp].cost);
-    }
-    return bootcampCosts;
-  }
-
-
-*/
 
 
   <!--Graph it-->
   $('#calculate').on("click", function() {
+    //Make data logger visible
+    $('#four').css({opacity:'1'});
 
-    //Fill the graphing arrays
-    var bootcampData = [
-      { names: [] },
-      { costs: [] },
-      { weeks: [] },
-      { finance: [] },
-      { housing: [] },
-      { workingCost: [] }
-
-    ], cityArray = ["San Fransisco","Los Angeles", "Chicago", "Austin", "New York City"];
-
-
-//  I want my array to look like this:
+//  Pivot & Calculate bootcamps to look like this:
 //  [ { names: ['Free Code Camp', 'Costly Code Camp', 'Boring Code Camp'] },
 //    { weeks: [18, 12, 20] },
 //    { cost: [0, 20000, 5000] }  ]
+//
+// Fill the graphing arrays
 
     for (var i=0; i<bootcamps.length; i++) {
       bootcampData[0].names.push(bootcamps[i].name);
@@ -355,31 +303,26 @@ $(document).ready(function() {
       //Based on a 3 year cost @ 6%APR of $.09519 interest for every $1
       bootcampData[3].finance.push((bootcamps[i].cost*.09519));
 
+      //Check for housing costs
+      if (cityArray.indexOf(city)>=0) {
+        bootcampData[4].housing.push (2000);
+      }  else {
+        bootcampData[4].housing.push( 0);
+      }
 
-      /*
-       bootcampData[4].housing.push(function(){
-       if (cityArray.indexOf(city)>=0) {
-       return 2000;
-       }  else {
-       return 0;
-       }
-       });
-       */
+      //Calculate Workign Cost Opportunity
       bootcampData[5].workingCost.push((bootcamps[i].weeks * lastYearincome/50 ));
-
-
     }
 
-    console.log(lastYearincome, bootcampData);
+    //console.log(lastYearincome, bootcampData);
 
-
-
-
-
-
-
-
-
+    //just visual check our data arrays
+    $("#four").html("<p>Names:"+ bootcampData[0].names + "</p>");
+    $("#four").append("<p>Costs:"  + bootcampData[1].costs+ "</p>");
+    $("#four").append("<p>Weeks:"  +bootcampData[2].weeks+ "</p>");
+    $("#four").append("<p>Finance:"  +bootcampData[3].finance+ "</p>");
+    $("#four").append("<p>Housing:"  +bootcampData[4].housing+ "</p>");
+    $("#four").append("<p>Working Cost:"  +bootcampData[5].workingCost+ "</p>");
 
     //pass in our arrays to the data for the chart
     var data = {
