@@ -4,8 +4,8 @@ $(document).ready(function() {
 
   var city = "test";
   var lastYearincome = 52000;
-  var workingCosts = [];
-  var workingCostOpportunity = [];
+  //var workingCosts = [];
+  //var workingCostOpportunity = [];
 
   var bootcamps = [{
     "name": "App Academy",
@@ -235,8 +235,8 @@ $(document).ready(function() {
     ]
   }];
 
-  var campNameLabels = getBootcamps(bootcamps);
-  var campCostsArray = getBootcampsCosts(bootcamps);
+  //var campNameLabels = getBootcamps(bootcamps);
+  //var campCostsArray = getBootcampsCosts(bootcamps);
 
   //reduce opacity for steps 2 through 4
   //the actual elements start out hidden via CSS
@@ -257,10 +257,11 @@ $(document).ready(function() {
 
 
     console.log(city);
-    console.log(campNameLabels);
+    //console.log(campNameLabels);
 
   });
 
+  /*
   var housingArray = bootCampLocation(city, bootcamps);
   function bootCampLocation(city, bootCampObject){
     var housingCosts=[];
@@ -272,7 +273,7 @@ $(document).ready(function() {
     }
     return housingCosts;
   }
-
+*/
   //step two event listener
 
   $('#income').on("change", function() {
@@ -281,7 +282,7 @@ $(document).ready(function() {
 
     //console.log(lastYearincome);
 
-    workingCostOpportunity = getWorkingCosts(bootcamps, lastYearincome);
+    //workingCostOpportunity = getWorkingCosts(bootcamps, lastYearincome);
 
     //console.log("Income Array", workingCostOpportunity);
 
@@ -291,6 +292,7 @@ $(document).ready(function() {
 
   });
 
+  /*
   function getWorkingCosts(bootCampObject, annualIncome) {
     //console.log("BootCamp Object", bootcamps)
     console.log("last years income", annualIncome);
@@ -321,84 +323,71 @@ $(document).ready(function() {
     return bootcampCosts;
   }
 
-  var bootcampData = [];
-  // var i = 0;
-  var cityArray = ["San Fransisco","Los Angeles", "Chicago", "Austin", "New York City"];
 
-//Fill the graphing arrays
-  function getBootCampData() {
-    //parse the arguments passed to the function (we don't know how many, thus can add others)
-    var args = Array.prototype.slice.call(arguments);
-
-    //Set up the empty Array
-    for(var i = 0; i< args.length; i++) {
-      var p = args[i];
-      bootcampData[i] = {};
-      bootcampData[i][p] = [];
-    }
-
-    //Loop through each school & each slice
-    //Assign original or manipulated variable
-    //For calculated variables, must check arg name
-    for(var j = 0; j < bootcamps.length; j++) {
-      for(var x = 0; x < bootcampData.length; x++) {
-        if ( (args[x]==="name" ) || (args[x] === "cost" ) ) {
-          bootcampData[x][args[x]].push(bootcamps[j][args[x]]);
-        } else {
-          bootcampData[x][args[x]].push("calculated variable");
-        }
-      }
-    }
-    return bootcampData;
-  }
-
-  //get the array of graphable data
-  var data = getBootCampData("name","cost","weeks");
-
-  console.log(data);
-  var test = data[0].name;
-
-  data[0].name.forEach(function(school){
-    $('#target').append(school);
-  });
-
-
-  /*  function getBootcampData(bootCampObject) {
-   for (var camp in bootCampObject) {
-   i+=1;
-   //Set Camp Name
-
-   bootcampData[i][name] = bootCampObject[camp].name;
-   console.log(bootCampObject[camp].name);
-
-   /*
-   //Set Housing Costs
-   if (cityArray.indexOf(city)>=0) {
-   bootcampData[i].housingCosts = 2000;
-   }  else {
-   bootcampData[i].housingCosts = 0;
-   }
-
-   //Set Financing Costs
-   //Based on a 3 year cost @ 6%APR of $.09519 interest for every $1
-   bootcampData[i].financingCosts = bootCampObject[camp].cost * .09519;
-   //Set Camp Cost
-
-
-   }
-   }*/
-
+*/
 
 
   <!--Graph it-->
   $('#calculate').on("click", function() {
 
+    //Fill the graphing arrays
+    var bootcampData = [
+      { names: [] },
+      { costs: [] },
+      { weeks: [] },
+      { finance: [] },
+      { housing: [] },
+      { workingCost: [] }
+
+    ], cityArray = ["San Fransisco","Los Angeles", "Chicago", "Austin", "New York City"];
+
+
+//  I want my array to look like this:
+//  [ { names: ['Free Code Camp', 'Costly Code Camp', 'Boring Code Camp'] },
+//    { weeks: [18, 12, 20] },
+//    { cost: [0, 20000, 5000] }  ]
+
+    for (var i=0; i<bootcamps.length; i++) {
+      bootcampData[0].names.push(bootcamps[i].name);
+      bootcampData[1].costs.push(bootcamps[i].cost);
+      bootcampData[2].weeks.push(bootcamps[i].weeks);
+
+      //Based on a 3 year cost @ 6%APR of $.09519 interest for every $1
+      bootcampData[3].finance.push((bootcamps[i].cost*.09519));
+
+
+      /*
+       bootcampData[4].housing.push(function(){
+       if (cityArray.indexOf(city)>=0) {
+       return 2000;
+       }  else {
+       return 0;
+       }
+       });
+       */
+      bootcampData[5].workingCost.push((bootcamps[i].weeks * lastYearincome/50 ));
+
+
+    }
+
+    console.log(lastYearincome, bootcampData);
+
+
+
+
+
+
+
+
+
+
     //pass in our arrays to the data for the chart
     var data = {
-      labels: campNameLabels,
+      labels: bootcampData[0].names,
       series: [
-        campCostsArray,
-        workingCostOpportunity
+        bootcampData[1].costs,
+        bootcampData[3].finance,
+        bootcampData[5].workingCost
       ]
 
     };
