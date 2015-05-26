@@ -305,9 +305,9 @@ $(document).ready(function() {
 
       //Check for housing costs
       if (cityArray.indexOf(city)>=0) {
-        bootcampData[4].housing.push (2000);
+        bootcampData[4].housing.push (0);
       }  else {
-        bootcampData[4].housing.push( 0);
+        bootcampData[4].housing.push(2000);
       }
 
       //Calculate Workign Cost Opportunity
