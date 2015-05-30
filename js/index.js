@@ -307,7 +307,7 @@ $(document).ready(function() {
       if (cityArray.indexOf(city)>=0) {
         bootcampData[4].housing.push (0);
       }  else {
-        bootcampData[4].housing.push(2000);
+        bootcampData[4].housing.push( 2000);
       }
 
       //Calculate Workign Cost Opportunity
@@ -336,17 +336,42 @@ $(document).ready(function() {
     };
 
     //override chartist.js defaults
-    var options = {
-      axisY: {
-        offset: 30,
-        labelInterpolationFnc: function(value) {
-          return '$' + value;
-        }
-      }
-    };
+    var width = 600,
+      barHeight = 20;
 
-    //create chart passing in the data & options
-    new Chartist.Bar('.ct-chart', data, options);
+    console.log(Math.max.apply(null, bootcampData[1].costs));
+
+
+    console.log(d3.max(bootcampData[1].costs));
+
+    var x = d3.scale.linear()
+      .domain([0, 21000])
+      .range([0, width]);
+
+    var chart = d3.select(".chart")
+      .attr("width", width)
+      .attr("height", barHeight * bootcampData[1].costs.length);
+
+    var bar = chart.selectAll("g")
+      .data(bootcampData[1].costs)
+      .enter().append("g")
+      .attr("transform", function(d, i) { return "translate(0," + i * barHeight + ")"; });
+
+    bar.append("rect")
+      .attr("width", function(d) { return x(d); })
+      .attr("height", barHeight - 1);
+
+    bar.append("text")
+      .attr("x", function(d) { return x(d) - 3; })
+      .attr("y", barHeight / 2)
+      .attr("dy", ".35em")
+      .text(function(d) { return d; });
+
+
+
+
+
+
 
   });
 
