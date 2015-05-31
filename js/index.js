@@ -5,17 +5,6 @@ $(document).ready(function() {
   var city = "test";
   var lastYearincome = 52000;
 
-  //this is used before graphing to collect data for d3/chartist
-  var bootcampData = [
-    { names: [] },
-    { costs: [] },
-    { weeks: [] },
-    { finance: [] },
-    { housing: [] },
-    { workingCost: [] }
-
-  ];
-
   //major cities array to check against users location for housing costs
   var cityArray = ["San Fransisco","Los Angeles", "Chicago", "Austin", "New York City"];
 
@@ -288,64 +277,59 @@ $(document).ready(function() {
     //Make data logger visible
     $('#four').css({opacity:'1'});
 
-//  Pivot & Calculate bootcamps to look like this:
-//  [ { names: ['Free Code Camp', 'Costly Code Camp', 'Boring Code Camp'] },
-//    { weeks: [18, 12, 20] },
-//    { cost: [0, 20000, 5000] }  ]
-//
-// Fill the graphing arrays
 
-    for (var i=0; i<bootcamps.length; i++) {
-      bootcampData[0].names.push(bootcamps[i].name);
-      bootcampData[1].costs.push(bootcamps[i].cost);
-      bootcampData[2].weeks.push(bootcamps[i].weeks);
+    <!--Prep the data for D3 -->
+    bootcamps.forEach(function(camp) {
+      var y0=0;
 
-      //Based on a 3 year cost @ 6%APR of $.09519 interest for every $1
-      bootcampData[3].finance.push((bootcamps[i].cost*.09519));
-
-      //Check for housing costs
+      //this just checks against main city array.
+      //when we refactor, this should check against this camp's cities array
+      //should not be a difficult change
       if (cityArray.indexOf(city)>=0) {
-        bootcampData[4].housing.push (0);
+        weeklyHousing =  0;
       }  else {
-        bootcampData[4].housing.push( 2000);
+        weeklyHousing = 500;
       }
 
-      //Calculate Workign Cost Opportunity
-      bootcampData[5].workingCost.push((bootcamps[i].weeks * lastYearincome/50 ));
-    }
+      camp.mapping = [{
 
-    //console.log(lastYearincome, bootcampData);
+        name: camp.name,
+        label: 'Tuition',
+        y0:  y0,
+        y1: y0 += +camp.cost
+      }, {
+        name: camp.name,
+        label: 'Finance',
+        y0:  +camp.cost,
+        y1: y0 += +Math.floor(camp.cost*.09519)
+      }, {
+        name: camp.name,
+        label: 'Housing',
+        y0:  +Math.floor(camp.cost*1.09519),
+        y1: y0 += weeklyHousing *camp.weeks
+      }, {
+        name: camp.name,
+        label: 'Working Cost',
+        y0: +(Math.floor(camp.cost*1.09519) + weeklyHousing*camp.weeks),
+        y1: y0 += +(Math.floor(camp.weeks * lastYearincome/50))
+      }];
+      camp.total = camp.mapping[camp.mapping.length - 1].y1;
+    });
 
-    //just visual check our data arrays
-    $("#four").html("<p>Names:"+ bootcampData[0].names + "</p>");
-    $("#four").append("<p>Costs:"  + bootcampData[1].costs+ "</p>");
-    $("#four").append("<p>Weeks:"  +bootcampData[2].weeks+ "</p>");
-    $("#four").append("<p>Finance:"  +bootcampData[3].finance+ "</p>");
-    $("#four").append("<p>Housing:"  +bootcampData[4].housing+ "</p>");
-    $("#four").append("<p>Working Cost:"  +bootcampData[5].workingCost+ "</p>");
-
-    //pass in our arrays to the data for the chart
-    var data = {
-      labels: bootcampData[0].names,
-      series: [
-        bootcampData[1].costs,
-        bootcampData[3].finance,
-        bootcampData[5].workingCost
-      ]
-
-    };
+    console.log(bootcamps);
 
     //override chartist.js defaults
     var width = 600,
       barHeight = 20;
 
-    console.log(Math.max.apply(null, bootcampData[1].costs));
+    //console.log(Math.max.apply(null, bootcamps[total]));
 
 
-    console.log(d3.max(bootcampData[1].costs));
+    console.log(max);
+    //console.log(d3.max(bootcampData[1].costs));
 
     var x = d3.scale.linear()
-      .domain([0, 21000])
+      .domain([0, 40000])
       .range([0, width]);
 
     var chart = d3.select(".chart")
@@ -366,12 +350,6 @@ $(document).ready(function() {
       .attr("y", barHeight / 2)
       .attr("dy", ".35em")
       .text(function(d) { return d; });
-
-
-
-
-
-
 
   });
 
