@@ -1,8 +1,6 @@
 $(document).ready(function() {
 
-  $('#target').append("change it");
-
-  var city = "test";
+  var city = "";
   var lastYearincome = 52000;
 
   //major cities array to check against users location for housing costs
@@ -278,6 +276,8 @@ $(document).ready(function() {
     $('#four').css({opacity:'1'});
 
 
+
+
     <!--Prep the data for D3 -->
     bootcamps.forEach(function(camp) {
       var y0=0;
@@ -314,42 +314,56 @@ $(document).ready(function() {
         y1: y0 += +(Math.floor(camp.weeks * lastYearincome/50))
       }];
       camp.total = camp.mapping[camp.mapping.length - 1].y1;
+
+
     });
 
-    console.log(bootcamps);
 
-    //override chartist.js defaults
-    var width = 600,
-      barHeight = 20;
+    console.log(bootcamps[0].name);
 
-    //console.log(Math.max.apply(null, bootcamps[total]));
+    var margin = {top: 20, right: 55, bottom: 30, left: 40},
+      width  = 800 - margin.left - margin.right,
+      height = 600  - margin.top  - margin.bottom;
+
+    var x = d3.scale.ordinal()
+      .rangeRoundBands([0, width], .1);
+
+    var y = d3.scale.linear()
+      .rangeRound([height, 0]);
+
+    x.domain(bootcamps.map(function (d) { return d.name; })); //E
+    y.domain([0, d3.max(bootcamps, function (d) { return d.total; })]);
+
+    var color = d3.scale.ordinal()
+      .range(["#006ca0","#ff7e30","#a0c9e9","#ffbb82"])
+      .domain(['Tuition', 'Finance', 'Housing', 'Working Cost']);
+
+   // console.log(color);
+
+    var svg = d3.select("svg")
+      .attr("width",  width  + margin.left + margin.right)
+      .attr("height", height + margin.top  + margin.bottom)
+      .append("g")
+      .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
 
-    console.log(max);
-    //console.log(d3.max(bootcampData[1].costs));
 
-    var x = d3.scale.linear()
-      .domain([0, 40000])
-      .range([0, width]);
-
-    var chart = d3.select(".chart")
-      .attr("width", width)
-      .attr("height", barHeight * bootcampData[1].costs.length);
-
-    var bar = chart.selectAll("g")
-      .data(bootcampData[1].costs)
+    var selection = svg.selectAll(".series")
+      .data(bootcamps)
       .enter().append("g")
-      .attr("transform", function(d, i) { return "translate(0," + i * barHeight + ")"; });
+      .attr("class", "series")
+      .attr("transform", function (d) { return "translate(" + x(d.name) + ",0)"; });
 
-    bar.append("rect")
-      .attr("width", function(d) { return x(d); })
-      .attr("height", barHeight - 1);
+    selection.selectAll("rect")
+      .data(function (d) { return d.mapping; })
+      .enter().append("rect")
+      .attr("width", x.rangeBand())
+      .attr("y", function (d) { return y(d.y1); })
+      .attr("height", function (d) { return y(d.y0) - y(d.y1); })
+      .style("fill", function (d) { return color(d.label); })
+      .style("stroke", "white");
 
-    bar.append("text")
-      .attr("x", function(d) { return x(d) - 3; })
-      .attr("y", barHeight / 2)
-      .attr("dy", ".35em")
-      .text(function(d) { return d; });
+
 
   });
 
