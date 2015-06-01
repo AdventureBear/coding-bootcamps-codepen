@@ -321,7 +321,7 @@ $(document).ready(function() {
     });
 
 
-    console.log(bootcamps[0].name);
+    console.log(bootcamps[0]);
 
     var margin = {top: 20, right: 55, bottom: 30, left: 40},
       width  = 800 - margin.left - margin.right,
@@ -363,7 +363,10 @@ $(document).ready(function() {
       .attr("y", function (d) { return y(d.y1); })
       .attr("height", function (d) { return y(d.y0) - y(d.y1); })
       .style("fill", function (d) { return color(d.label); })
-      .style("stroke", "white");
+      .style("stroke", "white")
+      .on("mouseover", function (d) { showPopover.call(this, d); })
+      .on("mouseout",  function (d) { removePopovers(); });
+
 
 
     //legends
@@ -416,7 +419,27 @@ $(document).ready(function() {
 
 
 
+    //tooltips
+    function removePopovers () {
+      $('.popover').each(function() {
+        $(this).remove();
+      });
+    }
 
+    function showPopover (d) {
+      $(this).popover({
+        title: d.name,
+        placement: 'auto top',
+        container: 'body',
+        trigger: 'manual',
+        html : true,
+        content: function() {
+          return "School: " + d.label +
+            "<br/>Cost $: " +
+            d3.format(",")(d.value ? d.value: d.y1 - d.y0); }
+      });
+      $(this).popover('show')
+    }
 
 
 
