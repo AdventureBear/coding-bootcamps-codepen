@@ -67,7 +67,17 @@ ul li span {
 }
 
 .chart text {
-  fill: white;
+  fill: #121401;
   font: 10px sans-serif;
   text-anchor: end;
+}
+
+
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #121401;
+  stroke-width: 2px;
+  shape-rendering: crispEdges;
 }

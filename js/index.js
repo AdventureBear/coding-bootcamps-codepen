@@ -279,6 +279,8 @@ $(document).ready(function() {
 
 
     <!--Prep the data for D3 -->
+    var categoryNames = ['Tuition', 'Finance', 'Housing', 'Working Cost'];
+
     bootcamps.forEach(function(camp) {
       var y0=0;
 
@@ -362,6 +364,65 @@ $(document).ready(function() {
       .attr("height", function (d) { return y(d.y0) - y(d.y1); })
       .style("fill", function (d) { return color(d.label); })
       .style("stroke", "white");
+
+
+    //legends
+    var legend = svg.selectAll(".legend")
+      .data(categoryNames.slice().reverse())
+      .enter().append("g")
+      .attr("class", "legend")
+      .attr("transform", function (d, i) {
+        return "translate(55," + i * 20 + ")";
+      });
+
+    legend.append("rect")
+      .attr("x", width - 10)
+      .attr("width", 10)
+      .attr("height", 10)
+      .style("fill", color)
+      .style("stroke", "grey");
+
+    legend.append("text")
+      .attr("x", width - 12)
+      .attr("y", 6)
+      .attr("dy", ".35em")
+      .style("text-anchor", "end")
+      .text(function (d) { return d; });
+
+
+    //axes
+    var xAxis = d3.svg.axis()
+      .scale(x)
+      .orient("bottom");
+
+    var yAxis = d3.svg.axis()
+      .scale(y)
+      .orient("left");
+
+    svg.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(xAxis);
+
+    svg.append("g")
+      .attr("class", "y axis")
+      .call(yAxis)
+      .append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 6)
+      .attr("dy", ".71em")
+      .style("text-anchor", "end")
+      .text("Cost in $USD");
+
+
+
+
+
+
+
+
+
+
 
 
 
