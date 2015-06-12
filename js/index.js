@@ -282,7 +282,7 @@ $(document).ready(function() {
     var categoryNames = ['Tuition', 'Finance', 'Housing', 'Working Cost'];
 
     bootcamps.forEach(function(camp) {
-      var y0=0;
+      var x0=0;
 
       //this just checks against main city array.
       //when we refactor, this should check against this camp's cities array
@@ -297,127 +297,101 @@ $(document).ready(function() {
 
         name: camp.name,
         label: 'Tuition',
-        y0:  y0,
-        y1: y0 += +camp.cost
+        x0:  x0,
+        x1: x0 += +camp.cost
       }, {
         name: camp.name,
         label: 'Finance',
-        y0:  +camp.cost,
-        y1: y0 += +Math.floor(camp.cost*.09519)
+        x0:  +camp.cost,
+        x1: x0 += +Math.floor(camp.cost*.09519)
       }, {
         name: camp.name,
         label: 'Housing',
-        y0:  +Math.floor(camp.cost*1.09519),
-        y1: y0 += weeklyHousing *camp.weeks
+        x0:  +Math.floor(camp.cost*1.09519),
+        x1: x0 += weeklyHousing *camp.weeks
       }, {
         name: camp.name,
         label: 'Working Cost',
-        y0: +(Math.floor(camp.cost*1.09519) + weeklyHousing*camp.weeks),
-        y1: y0 += +(Math.floor(camp.weeks * lastYearincome/50))
+        x0: +(Math.floor(camp.cost*1.09519) + weeklyHousing*camp.weeks),
+        x1: x0 += +(Math.floor(camp.weeks * lastYearincome/50))
       }];
-      camp.total = camp.mapping[camp.mapping.length - 1].y1;
-
+      camp.total = camp.mapping[camp.mapping.length - 1].x1;
 
     });
 
 
     console.log(bootcamps[0]);
 
-    var margin = {top: 20, right: 55, bottom: 30, left: 40},
+    var margin = {top: 30, right: 60, bottom: 50, left: 140},
       width  = 800 - margin.left - margin.right,
       height = 600  - margin.top  - margin.bottom;
+    var barHeight = 20;
 
-    var x = d3.scale.ordinal()
-      .rangeRoundBands([0, width], .1);
+    var xScale = d3.scale.linear()
+      .domain([0, d3.max(bootcamps, function (d) { return d.total; })])
+      .rangeRound([0,width]);
 
-    var y = d3.scale.linear()
-      .rangeRound([height, 0]);
+    var yScale = d3.scale.ordinal()
+      .domain(bootcamps.map(function (d) { return d.name; }))
+      .rangeRoundBands([0, height], .1);
 
-    x.domain(bootcamps.map(function (d) { return d.name; })); //E
-    y.domain([0, d3.max(bootcamps, function (d) { return d.total; })]);
+
+    console.log("yrangeroundband", yScale.rangeBand());
 
     var color = d3.scale.ordinal()
       .range(["#006ca0","#ff7e30","#a0c9e9","#ffbb82"])
       .domain(['Tuition', 'Finance', 'Housing', 'Working Cost']);
 
-   // console.log(color);
 
     var svg = d3.select("svg")
-      .attr("width",  width  + margin.left + margin.right)
-      .attr("height", height + margin.top  + margin.bottom)
+      .attr("width",   width  + margin.left + margin.right)
+      .attr("height", height + margin.top + margin.bottom)
       .append("g")
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
 
 
     var selection = svg.selectAll(".series")
       .data(bootcamps)
       .enter().append("g")
-      .attr("class", "series")
-      .attr("transform", function (d) { return "translate(" + x(d.name) + ",0)"; });
+      .attr("class","series")
+      .attr("transform", function (d) { return "translate(0,"  + yScale(d.name)+")"; });;
 
     selection.selectAll("rect")
-      .data(function (d) { return d.mapping; })
+      .data(function (d) {return d.mapping; })
       .enter().append("rect")
-      .attr("width", x.rangeBand())
-      .attr("y", function (d) { return y(d.y1); })
-      .attr("height", function (d) { return y(d.y0) - y(d.y1); })
+      .attr("width", function(d) {return xScale ((d.x1) - (d.x0)); })
+      .attr("x", function (d){return xScale(d.x0); })
+      .attr("height", yScale.rangeBand())
       .style("fill", function (d) { return color(d.label); })
       .style("stroke", "white")
       .on("mouseover", function (d) { showPopover.call(this, d); })
       .on("mouseout",  function (d) { removePopovers(); });
 
-
-
-    //legends
-    var legend = svg.selectAll(".legend")
-      .data(categoryNames.slice().reverse())
-      .enter().append("g")
-      .attr("class", "legend")
-      .attr("transform", function (d, i) {
-        return "translate(55," + i * 20 + ")";
-      });
-
-    legend.append("rect")
-      .attr("x", width - 10)
-      .attr("width", 10)
-      .attr("height", 10)
-      .style("fill", color)
-      .style("stroke", "grey");
-
-    legend.append("text")
-      .attr("x", width - 12)
-      .attr("y", 6)
-      .attr("dy", ".35em")
-      .style("text-anchor", "end")
-      .text(function (d) { return d; });
-
-
+//axes
     //axes
     var xAxis = d3.svg.axis()
-      .scale(x)
+      .scale(xScale)
       .orient("bottom");
 
     var yAxis = d3.svg.axis()
-      .scale(y)
+      .scale(yScale)
       .orient("left");
+
+    svg.append("g")
+      .attr("class", "y axis")
+      .call(yAxis);
 
     svg.append("g")
       .attr("class", "x axis")
       .attr("transform", "translate(0," + height + ")")
-      .call(xAxis);
+      .call(xAxis)
 
-    svg.append("g")
-      .attr("class", "y axis")
-      .call(yAxis)
       .append("text")
-      .attr("transform", "rotate(-90)")
-      .attr("y", 6)
-      .attr("dy", ".71em")
-      .style("text-anchor", "end")
+      .attr("x", 300)
+      .attr("y", 35)
+      .attr("dy", ".35em")
+      .style("text-anchor", "middle")
       .text("Cost in $USD");
-
-
 
     //tooltips
     function removePopovers () {
@@ -434,12 +408,37 @@ $(document).ready(function() {
         trigger: 'manual',
         html : true,
         content: function() {
-          return "School: " + d.label +
-            "<br/>Cost $: " +
-            d3.format(",")(d.value ? d.value: d.y1 - d.y0); }
+          return d.label +
+            "<br/>$" +
+            d3.format(",")(d.value ? d.value: d.x1 - d.x0);
+        }
       });
       $(this).popover('show')
     }
+
+
+    //legends
+    var legend = svg.selectAll(".legend")
+      .data(categoryNames.slice().reverse())
+      .enter().append("g")
+      .attr("class", "legend")
+      .attr("transform", function (d, i) {
+        return "translate(30," + i * yScale.rangeBand() * 1.1 + ")";
+      });
+
+    legend.append("rect")
+      .attr("x", width - yScale.rangeBand())
+      .attr("width", yScale.rangeBand())
+      .attr("height", yScale.rangeBand())
+      .style("fill", color)
+      .style("stroke", "white");
+
+    legend.append("text")
+      .attr("x", width - yScale.rangeBand() * 1.2)
+      .attr("y", 12)
+      .attr("dy", ".35em")
+      .style("text-anchor", "end")
+      .text(function (d) { return d; });
 
 
 
